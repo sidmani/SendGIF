@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11185.3" systemVersion="16A239m" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11185.3" systemVersion="16A270f" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11151.4"/>
@@ -26,11 +26,24 @@
                                     <constraint firstAttribute="height" constant="50" id="lbT-26-ccj"/>
                                 </constraints>
                             </view>
+                            <button opaque="NO" alpha="0.75" tag="5" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SE5-pw-n3L">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="35" id="XKt-k1-DMV"/>
+                                    <constraint firstAttribute="width" secondItem="SE5-pw-n3L" secondAttribute="height" multiplier="1:1" id="yzg-wL-oGv"/>
+                                </constraints>
+                                <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="Button" image="switch_camera"/>
+                                <connections>
+                                    <action selector="switchCamera:" destination="ObA-dk-sSI" eventType="touchUpInside" id="8MZ-ad-WNF"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="SE5-pw-n3L" firstAttribute="leading" secondItem="04U-ct-C9b" secondAttribute="trailing" constant="10" id="3Tw-QC-ace"/>
                             <constraint firstItem="04U-ct-C9b" firstAttribute="centerX" secondItem="zMn-AG-sqS" secondAttribute="centerX" id="HNl-OC-E6q"/>
                             <constraint firstItem="n38-gi-rB5" firstAttribute="top" secondItem="04U-ct-C9b" secondAttribute="bottom" constant="15" id="Qi6-iO-hm9"/>
+                            <constraint firstItem="SE5-pw-n3L" firstAttribute="centerY" secondItem="04U-ct-C9b" secondAttribute="centerY" id="fUy-oc-E6m"/>
                         </constraints>
                     </view>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
@@ -41,6 +54,10 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="X47-rx-isc" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="137.68115942028987" y="138.58695652173915"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="switch_camera" width="256" height="256"/>
+    </resources>
 </document>

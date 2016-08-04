@@ -25,18 +25,7 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     override func viewDidLoad() {
         super.viewDidLoad()
         captureSession.sessionPreset = AVCaptureSessionPreset352x288
-        let devices = AVCaptureDevice.devices()!
-        var captureDevice:AVCaptureDevice?
-        for device in devices {
-            // Make sure this particular device supports video
-            if (device.hasMediaType(AVMediaTypeVideo)) {
-                // Finally check the position and confirm we've got the back camera
-                if(device.position == AVCaptureDevicePosition.back) {
-                    captureDevice = device as? AVCaptureDevice
-                }
-            }
-        }
-        if captureDevice != nil {
+        if let captureDevice = cameraWithPosition(.back) {
             do {
                 try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
             } catch {
@@ -47,6 +36,8 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)!
         self.view.layer.addSublayer(videoPreviewLayer!)
         self.view.bringSubview(toFront: recordButton)
+        self.view.viewWithTag(5)!.tintColor = UIColor.white
+        self.view.bringSubview(toFront: self.view.viewWithTag(5)!)
         videoPreviewLayer!.frame = self.view.layer.frame
         videoPreviewLayer!.bounds = self.view.layer.bounds
         videoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
@@ -61,10 +52,47 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
             videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
         }
-        
         recordButton.addTarget(self, action: #selector(recordButtonDown), for: .touchDown)
         recordButton.addTarget(self, action: #selector(recordButtonUp), for: .touchUpInside)
         recordButton.addTarget(self, action: #selector(recordButtonUp), for: .touchUpOutside)
+    }
+
+    @IBAction func switchCamera(_ sender: AnyObject) {
+        guard let input = captureSession.inputs[0] as? AVCaptureInput else { return }
+        captureSession.beginConfiguration()
+        captureSession.removeInput(input)
+        if (input as! AVCaptureDeviceInput).device.position == .back {
+            if let captureDevice = cameraWithPosition(.front) {
+                do {
+                    try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
+                } catch {
+                    fatalError()
+                }
+            }
+        } else {
+            if let captureDevice = cameraWithPosition(.back) {
+                do {
+                    try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
+                } catch {
+                    fatalError()
+                }
+            }
+        }
+        captureSession.commitConfiguration()
+        if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
+            videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
+        }
+        
+    }
+    
+    func cameraWithPosition(_ position: AVCaptureDevicePosition) -> AVCaptureDevice? {
+        guard let devices = AVCaptureDevice.devices() else { return nil }
+        for device in devices {
+            if (device.hasMediaType(AVMediaTypeVideo) && device.position == position) {
+                    return device as? AVCaptureDevice
+            }
+        }
+        return nil
     }
     
     func newVideoOrientationAfterRotation(_ angle:Int, start:AVCaptureVideoOrientation) -> AVCaptureVideoOrientation {
@@ -139,13 +167,20 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         self.recordButton.setProgress(1)
         print("GIF completed processing")
         self.activeConversation?.insertAttachment(url as URL, withAlternateFilename: nil, completionHandler: nil)
+        if (self.presentationStyle == .expanded) {
+            self.requestPresentationStyle(.compact)
+        }
         self.currentFrames = []
     }
     
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         if (isRecording) {
-            let ciImage = CIImage(cvImageBuffer: CMSampleBufferGetImageBuffer(sampleBuffer)!)
-            currentFrames.append(ciContext.createCGImage(ciImage, from: ciImage.extent)!)
+            var ciImage = CIImage(cvImageBuffer: CMSampleBufferGetImageBuffer(sampleBuffer)!)
+            if (self.presentationStyle == .compact) {
+                ciImage = ciImage.cropping(to: CGRect(x: view.frame.minX, y: ciImage.extent.height - view.frame.height, width: view.frame.width, height: view.frame.height))
+            }
+            let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent)!
+            currentFrames.append(cgImage)
             if (currentFrames.count == maxFrames) {
                 recordButtonUp()
             } else {
@@ -227,7 +262,7 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     
         // Use this method to finalize any behaviors associated with the change in presentation style.
     }
-
+    
 }
 
 class RecordButton:UIControl {
@@ -247,7 +282,6 @@ class RecordButton:UIControl {
 
         self.layer.addSublayer(centerButton)
         self.layer.addSublayer(outsideRing)
-        
     }
     
     func setProgress(_ progress: CGFloat) {
