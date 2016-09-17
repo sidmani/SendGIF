@@ -15,15 +15,17 @@ import MobileCoreServices
 class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     let captureSession = AVCaptureSession()
     var videoPreviewLayer:AVCaptureVideoPreviewLayer?
-    var videoCaptureOutput = AVCaptureVideoDataOutput()
+    let videoCaptureOutput = AVCaptureVideoDataOutput()
+    
     var currentFrames:[CGImage] = []
     var isRecording = false
-    var ciContext = CIContext()
-    let maxFrames:Int = 150 //30 * num of seconds
+    let ciContext = CIContext()
+    let maxFrames = 150 //30 * num of seconds
     var frameNum = 0
-
-    @IBOutlet weak var speedControl: UISegmentedControl!
+    var isReversed = false
     
+    
+    @IBOutlet weak var speedControl: UISegmentedControl!
     @IBOutlet weak var recordButton: RecordButton!
     
     override func viewDidLoad() {
@@ -41,6 +43,8 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         self.view.bringSubview(toFront: recordButton)
         self.view.bringSubview(toFront: speedControl)
         self.view.viewWithTag(5)!.tintColor = UIColor.white
+        self.view.viewWithTag(4)!.tintColor = UIColor.white
+        self.view.bringSubview(toFront: self.view.viewWithTag(4)!)
         self.view.bringSubview(toFront: self.view.viewWithTag(5)!)
         videoPreviewLayer!.frame = self.view.layer.frame
         videoPreviewLayer!.bounds = self.view.layer.bounds
@@ -66,6 +70,11 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         captureSession.beginConfiguration()
         captureSession.removeInput(input)
         if (input as! AVCaptureDeviceInput).device.position == .back {
+            UIView.animate(withDuration: 1) {
+                let transform = CGAffineTransform.init(rotationAngle: CGFloat(M_PI))
+                self.view.viewWithTag(5)!.transform = transform
+            }
+
             if let captureDevice = cameraWithPosition(.front) {
                 do {
                     try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
@@ -74,6 +83,11 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
                 }
             }
         } else {
+            UIView.animate(withDuration: 1) {
+                let transform = CGAffineTransform.init(rotationAngle: 0)
+                self.view.viewWithTag(5)!.transform = transform
+            }
+
             if let captureDevice = cameraWithPosition(.back) {
                 do {
                     try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
@@ -86,7 +100,27 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
             videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
         }
-        
+    }
+    
+    
+    @IBAction func reverseGIF(_ sender: AnyObject) {
+        if (isReversed) {
+            isReversed = false
+            UIView.animate(withDuration: 0.5) {
+                let transform = CGAffineTransform.init(rotationAngle: 0)
+                self.view.viewWithTag(4)!.transform = transform
+                self.speedControl.tintColor = UIColor.red
+            }
+            recordButton.switchReversed(false)
+        } else {
+            isReversed = true
+            UIView.animate(withDuration: 0.5) {
+                let transform = CGAffineTransform.init(rotationAngle: CGFloat(M_PI))
+                self.view.viewWithTag(4)!.transform = transform
+                self.speedControl.tintColor = UIColor.blue
+            }
+            recordButton.switchReversed(true)
+        }
     }
     
     func cameraWithPosition(_ position: AVCaptureDevicePosition) -> AVCaptureDevice? {
@@ -163,6 +197,10 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         }
         guard let url = self.exportGIF(self.currentFrames, frameDelay: gifSpeed * 1.0/30.0) else {
             print("Image URL is nil!")
+            self.recordButton.isEnabled = true
+            self.recordButton.centerButton.opacity = 1
+            self.recordButton.setProgress(1)
+            self.currentFrames = []
             return
         }
         
@@ -177,6 +215,7 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         frameNum = 0
         self.currentFrames = []
     }
+    
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         if (isRecording) {
             var ciImage = CIImage(cvImageBuffer: CMSampleBufferGetImageBuffer(sampleBuffer)!)
@@ -218,7 +257,8 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         CGImageDestinationSetProperties(imageDestinationRef, fileProperties as CFDictionary?)
         let remainingProgress = 1 - recordButton.currProgress
         let initProgress = recordButton.currProgress
-        for (index, image) in images.enumerated() {
+       
+        for (index, image) in (isReversed ? images.reversed().enumerated() : images.enumerated()) {
             self.recordButton.setProgress(CGFloat(index+1)/CGFloat(images.count) * remainingProgress + initProgress)
             CGImageDestinationAddImage(imageDestinationRef, image, frameProperties as CFDictionary?)
         }
@@ -265,19 +305,7 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     
         // Use this to clean up state related to the deleted message.
     }
-    
-    override func willTransition(to presentationStyle: MSMessagesAppPresentationStyle) {
-        // Called before the extension transitions to a new presentation style.
-    
-        // Use this method to prepare for the change in presentation style.
-    }
-    
-    override func didTransition(to presentationStyle: MSMessagesAppPresentationStyle) {
-        // Called after the extension transitions to a new presentation style.
-    
-        // Use this method to finalize any behaviors associated with the change in presentation style.
-    }
-    
+
 }
 
 class RecordButton:UIControl {
@@ -305,6 +333,16 @@ class RecordButton:UIControl {
         outsideRing.strokeEnd = progress
         CATransaction.commit()
         CATransaction.flush()
+    }
+    
+    func switchReversed(_ val:Bool) {
+        if (val) {
+            outsideRing.strokeColor = UIColor.blue.cgColor
+            centerButton.fillColor = UIColor.blue.cgColor
+        } else {
+            outsideRing.strokeColor = UIColor.red.cgColor
+            centerButton.fillColor = UIColor.red.cgColor
+        }
     }
 }
 
