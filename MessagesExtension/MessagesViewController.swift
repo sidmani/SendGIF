@@ -19,7 +19,11 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     var currentFrames:[CGImage] = []
     var isRecording = false
     var ciContext = CIContext()
-    var maxFrames:Int = 150 //30 * num of seconds
+    let maxFrames:Int = 150 //30 * num of seconds
+    var frameNum = 0
+
+    @IBOutlet weak var speedControl: UISegmentedControl!
+    
     @IBOutlet weak var recordButton: RecordButton!
     
     override func viewDidLoad() {
@@ -32,10 +36,10 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
                 fatalError()
             }
         }
-        
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)!
         self.view.layer.addSublayer(videoPreviewLayer!)
         self.view.bringSubview(toFront: recordButton)
+        self.view.bringSubview(toFront: speedControl)
         self.view.viewWithTag(5)!.tintColor = UIColor.white
         self.view.bringSubview(toFront: self.view.viewWithTag(5)!)
         videoPreviewLayer!.frame = self.view.layer.frame
@@ -86,10 +90,10 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     }
     
     func cameraWithPosition(_ position: AVCaptureDevicePosition) -> AVCaptureDevice? {
-        guard let devices = AVCaptureDevice.devices() else { return nil }
-        for device in devices {
+        guard let devices = AVCaptureDeviceDiscoverySession(deviceTypes: [AVCaptureDeviceType.builtInWideAngleCamera], mediaType: AVMediaTypeVideo, position: position) else { return nil }
+        for device in devices.devices {
             if (device.hasMediaType(AVMediaTypeVideo) && device.position == position) {
-                    return device as? AVCaptureDevice
+                    return device
             }
         }
         return nil
@@ -124,11 +128,6 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         default: return .portrait
         }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         videoPreviewLayer!.frame = CGRect(x: videoPreviewLayer!.frame.minX, y: videoPreviewLayer!.frame.minY, width: size.width, height: size.height)
@@ -149,19 +148,24 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         print("record button down")
         currentFrames = []
         isRecording = true
+        speedControl.isUserInteractionEnabled = false
     }
     
     func recordButtonUp() {
         guard isRecording == true else { return }
         print("record button up")
-        
+        speedControl.isUserInteractionEnabled = true
         recordButton.isEnabled = false
         isRecording = false
-        
-        guard let url = self.exportGIF(self.currentFrames, frameDelay: 1/30) else {
+        var gifSpeed:Double = 1
+        if (speedControl.selectedSegmentIndex == 0) {
+            gifSpeed = 2
+        }
+        guard let url = self.exportGIF(self.currentFrames, frameDelay: gifSpeed * 1.0/30.0) else {
             print("Image URL is nil!")
             return
         }
+        
         self.recordButton.isEnabled = true
         self.recordButton.centerButton.opacity = 1
         self.recordButton.setProgress(1)
@@ -170,9 +174,9 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         if (self.presentationStyle == .expanded) {
             self.requestPresentationStyle(.compact)
         }
+        frameNum = 0
         self.currentFrames = []
     }
-    
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         if (isRecording) {
             var ciImage = CIImage(cvImageBuffer: CMSampleBufferGetImageBuffer(sampleBuffer)!)
@@ -180,32 +184,43 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
                 ciImage = ciImage.cropping(to: CGRect(x: view.frame.minX, y: ciImage.extent.height - view.frame.height, width: view.frame.width, height: view.frame.height))
             }
             let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent)!
-            currentFrames.append(cgImage)
+            switch (speedControl.selectedSegmentIndex) {
+            case 1:
+                currentFrames.append(cgImage)
+            case 0:
+                currentFrames.append(cgImage)
+            case 2:
+                if (frameNum % 2 == 0) {
+                    currentFrames.append(cgImage)
+                }
+            default: break
+            }
             if (currentFrames.count == maxFrames) {
                 recordButtonUp()
             } else {
                 recordButton.setProgress(1 - CGFloat(currentFrames.count) / CGFloat(maxFrames))
             }
+            frameNum += 1
         }
     }
     
-    func exportGIF(_ images:[CGImage], frameDelay delay:Double) -> NSURL? {
+    func exportGIF(_ images:[CGImage], frameDelay delay:Double) -> URL? {
         let fileProperties = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]]
         let frameProperties = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFDelayTime as String: delay]]
         guard let url = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("temp_gif_maker.gif") else {
             print("Failure to create URL for temporary file!")
             return nil
         }
-        guard let imageDestinationRef = CGImageDestinationCreateWithURL(url, kUTTypeGIF, images.count, nil) else {
+        guard let imageDestinationRef = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, images.count, nil) else {
             print("Failure to create CGImageDestination")
             return nil
         }
-        CGImageDestinationSetProperties(imageDestinationRef, fileProperties)
+        CGImageDestinationSetProperties(imageDestinationRef, fileProperties as CFDictionary?)
         let remainingProgress = 1 - recordButton.currProgress
         let initProgress = recordButton.currProgress
         for (index, image) in images.enumerated() {
             self.recordButton.setProgress(CGFloat(index+1)/CGFloat(images.count) * remainingProgress + initProgress)
-            CGImageDestinationAddImage(imageDestinationRef, image, frameProperties)
+            CGImageDestinationAddImage(imageDestinationRef, image, frameProperties as CFDictionary?)
         }
         if CGImageDestinationFinalize(imageDestinationRef) {
             return url
@@ -266,8 +281,8 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
 }
 
 class RecordButton:UIControl {
-    private let centerButton = CAShapeLayer()
-    private let outsideRing = CAShapeLayer()
+    let centerButton = CAShapeLayer()
+    let outsideRing = CAShapeLayer()
     var currProgress:CGFloat = 0
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

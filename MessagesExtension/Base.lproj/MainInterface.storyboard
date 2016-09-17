@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11185.3" systemVersion="16A270f" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="16A320" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11151.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -19,6 +19,14 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="528"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="h4E-jy-E9t">
+                                <segments>
+                                    <segment title="0.5x"/>
+                                    <segment title="1x"/>
+                                    <segment title="2x"/>
+                                </segments>
+                                <color key="tintColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            </segmentedControl>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="04U-ct-C9b" customClass="RecordButton" customModule="MessagesExtension" customModuleProvider="target">
                                 <color key="backgroundColor" red="0.0" green="1" blue="0.13124972751830333" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
@@ -41,6 +49,8 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="SE5-pw-n3L" firstAttribute="leading" secondItem="04U-ct-C9b" secondAttribute="trailing" constant="10" id="3Tw-QC-ace"/>
+                            <constraint firstItem="h4E-jy-E9t" firstAttribute="leading" secondItem="zMn-AG-sqS" secondAttribute="leading" constant="16" id="Cdb-EN-T37"/>
+                            <constraint firstItem="h4E-jy-E9t" firstAttribute="top" secondItem="qkL-Od-lgU" secondAttribute="bottom" constant="10" id="GbE-mq-Q4c"/>
                             <constraint firstItem="04U-ct-C9b" firstAttribute="centerX" secondItem="zMn-AG-sqS" secondAttribute="centerX" id="HNl-OC-E6q"/>
                             <constraint firstItem="n38-gi-rB5" firstAttribute="top" secondItem="04U-ct-C9b" secondAttribute="bottom" constant="15" id="Qi6-iO-hm9"/>
                             <constraint firstItem="SE5-pw-n3L" firstAttribute="centerY" secondItem="04U-ct-C9b" secondAttribute="centerY" id="fUy-oc-E6m"/>
@@ -50,11 +60,12 @@
                     <size key="freeformSize" width="320" height="528"/>
                     <connections>
                         <outlet property="recordButton" destination="04U-ct-C9b" id="z5O-Wc-XXv"/>
+                        <outlet property="speedControl" destination="h4E-jy-E9t" id="XBy-2X-Zen"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="X47-rx-isc" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="137.68115942028987" y="138.58695652173915"/>
+            <point key="canvasLocation" x="137.59999999999999" y="138.53073463268368"/>
         </scene>
     </scenes>
     <resources>

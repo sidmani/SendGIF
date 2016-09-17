@@ -18,7 +18,7 @@
                BlueprintIdentifier = "1F9D510E1D504A36000149FD"
                BuildableName = "MessagesExtension.appex"
                BlueprintName = "MessagesExtension"
-               ReferencedContainer = "container:GIFMaker.xcodeproj">
+               ReferencedContainer = "container:SendGIF.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -30,9 +30,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1F9D51041D504A34000149FD"
-               BuildableName = "GIFMaker.app"
-               BlueprintName = "GIFMaker"
-               ReferencedContainer = "container:GIFMaker.xcodeproj">
+               BuildableName = "SendGIF.app"
+               BlueprintName = "SendGIF"
+               ReferencedContainer = "container:SendGIF.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,7 +50,7 @@
             BlueprintIdentifier = "1F9D510E1D504A36000149FD"
             BuildableName = "MessagesExtension.appex"
             BlueprintName = "MessagesExtension"
-            ReferencedContainer = "container:GIFMaker.xcodeproj">
+            ReferencedContainer = "container:SendGIF.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1F9D51041D504A34000149FD"
-            BuildableName = "GIFMaker.app"
-            BlueprintName = "GIFMaker"
-            ReferencedContainer = "container:GIFMaker.xcodeproj">
+            BuildableName = "SendGIF.app"
+            BlueprintName = "SendGIF"
+            ReferencedContainer = "container:SendGIF.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -92,9 +92,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1F9D51041D504A34000149FD"
-            BuildableName = "GIFMaker.app"
-            BlueprintName = "GIFMaker"
-            ReferencedContainer = "container:GIFMaker.xcodeproj">
+            BuildableName = "SendGIF.app"
+            BlueprintName = "SendGIF"
+            ReferencedContainer = "container:SendGIF.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
