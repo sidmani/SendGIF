@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="16A320" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11535.1" systemVersion="16B2338c" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ObA-dk-sSI">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11523"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -20,6 +24,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="h4E-jy-E9t">
+                                <rect key="frame" x="15" y="30" width="122" height="29"/>
                                 <segments>
                                     <segment title="0.5x"/>
                                     <segment title="1x"/>
@@ -28,6 +33,7 @@
                                 <color key="tintColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             </segmentedControl>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="04U-ct-C9b" customClass="RecordButton" customModule="MessagesExtension" customModuleProvider="target">
+                                <rect key="frame" x="135" y="463" width="50" height="50"/>
                                 <color key="backgroundColor" red="0.0" green="1" blue="0.13124972751830333" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="04U-ct-C9b" secondAttribute="height" multiplier="1:1" id="WLF-m0-K7O"/>
@@ -35,6 +41,7 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" alpha="0.75" tag="5" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SE5-pw-n3L">
+                                <rect key="frame" x="195" y="470.5" width="35" height="35"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="35" id="XKt-k1-DMV"/>
                                     <constraint firstAttribute="width" secondItem="SE5-pw-n3L" secondAttribute="height" multiplier="1:1" id="yzg-wL-oGv"/>
@@ -46,6 +53,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" alpha="0.75" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j5g-bL-XNG">
+                                <rect key="frame" x="90" y="470.5" width="35" height="35"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="35" id="4cl-be-qb8"/>
                                     <constraint firstAttribute="width" secondItem="j5g-bL-XNG" secondAttribute="height" multiplier="1:1" id="uBS-5V-Ehp"/>
@@ -56,22 +64,42 @@
                                     <action selector="reverseGIF:" destination="ObA-dk-sSI" eventType="touchUpInside" id="O10-hz-Q7o"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3uS-Ft-2Q3">
+                                <rect key="frame" x="247" y="29.5" width="58" height="30"/>
+                                <state key="normal" title="No Filter">
+                                    <color key="titleColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="openFilterPicker:" destination="ObA-dk-sSI" eventType="touchUpInside" id="WV7-pW-Lyr"/>
+                                </connections>
+                            </button>
+                            <pickerView hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="x7d-71-0ay">
+                                <rect key="frame" x="0.0" y="312" width="320" height="216"/>
+                            </pickerView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="SE5-pw-n3L" firstAttribute="leading" secondItem="04U-ct-C9b" secondAttribute="trailing" constant="10" id="3Tw-QC-ace"/>
-                            <constraint firstItem="h4E-jy-E9t" firstAttribute="leading" secondItem="zMn-AG-sqS" secondAttribute="leading" constant="16" id="Cdb-EN-T37"/>
+                            <constraint firstItem="h4E-jy-E9t" firstAttribute="leading" secondItem="zMn-AG-sqS" secondAttribute="leading" constant="15" id="Cdb-EN-T37"/>
                             <constraint firstItem="h4E-jy-E9t" firstAttribute="top" secondItem="qkL-Od-lgU" secondAttribute="bottom" constant="10" id="GbE-mq-Q4c"/>
                             <constraint firstItem="04U-ct-C9b" firstAttribute="centerX" secondItem="zMn-AG-sqS" secondAttribute="centerX" id="HNl-OC-E6q"/>
+                            <constraint firstItem="x7d-71-0ay" firstAttribute="top" relation="greaterThanOrEqual" secondItem="3uS-Ft-2Q3" secondAttribute="bottom" constant="10" id="Kt1-pP-cNT"/>
+                            <constraint firstItem="n38-gi-rB5" firstAttribute="top" secondItem="x7d-71-0ay" secondAttribute="bottom" id="PB8-bi-P2C"/>
+                            <constraint firstItem="3uS-Ft-2Q3" firstAttribute="centerY" secondItem="h4E-jy-E9t" secondAttribute="centerY" id="QZg-vC-rXl"/>
                             <constraint firstItem="n38-gi-rB5" firstAttribute="top" secondItem="04U-ct-C9b" secondAttribute="bottom" constant="15" id="Qi6-iO-hm9"/>
+                            <constraint firstAttribute="trailing" secondItem="3uS-Ft-2Q3" secondAttribute="trailing" constant="15" id="RFR-IU-ybV"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="x7d-71-0ay" secondAttribute="trailing" constant="-16" id="TwP-zS-y9c"/>
                             <constraint firstItem="j5g-bL-XNG" firstAttribute="centerY" secondItem="04U-ct-C9b" secondAttribute="centerY" id="ZHv-a2-Iek"/>
                             <constraint firstItem="SE5-pw-n3L" firstAttribute="centerY" secondItem="04U-ct-C9b" secondAttribute="centerY" id="fUy-oc-E6m"/>
                             <constraint firstItem="04U-ct-C9b" firstAttribute="leading" secondItem="j5g-bL-XNG" secondAttribute="trailing" constant="10" id="h6E-2o-eqB"/>
+                            <constraint firstItem="x7d-71-0ay" firstAttribute="leading" secondItem="zMn-AG-sqS" secondAttribute="leadingMargin" constant="-16" id="xz6-xV-qeq"/>
                         </constraints>
                     </view>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="320" height="528"/>
                     <connections>
+                        <outlet property="filterButton" destination="3uS-Ft-2Q3" id="qAs-ec-SaY"/>
+                        <outlet property="filterPicker" destination="x7d-71-0ay" id="lhx-Tg-DCG"/>
                         <outlet property="recordButton" destination="04U-ct-C9b" id="z5O-Wc-XXv"/>
                         <outlet property="speedControl" destination="h4E-jy-E9t" id="XBy-2X-Zen"/>
                     </connections>

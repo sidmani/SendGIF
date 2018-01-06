@@ -11,10 +11,11 @@ import Messages
 import AVFoundation
 import ImageIO
 import MobileCoreServices
+typealias Filter = (name: String, key: String)
 
 class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     let captureSession = AVCaptureSession()
-    var videoPreviewLayer:AVCaptureVideoPreviewLayer?
+    var videoPreviewLayer = CALayer()
     let videoCaptureOutput = AVCaptureVideoDataOutput()
     
     var currentFrames:[CGImage] = []
@@ -23,14 +24,19 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     let maxFrames = 150 //30 * num of seconds
     var frameNum = 0
     var isReversed = false
+    var currentOrientation:AVCaptureVideoOrientation = .portrait
+    
+    var currentFilter:Filter?
     
     
     @IBOutlet weak var speedControl: UISegmentedControl!
     @IBOutlet weak var recordButton: RecordButton!
+    @IBOutlet weak var filterButton: UIButton!
+    @IBOutlet weak var filterPicker: UIPickerView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        captureSession.sessionPreset = AVCaptureSessionPreset352x288
+        captureSession.sessionPreset = AVCaptureSessionPresetHigh
         if let captureDevice = cameraWithPosition(.back) {
             do {
                 try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
@@ -38,28 +44,35 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
                 fatalError()
             }
         }
-        videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)!
-        self.view.layer.addSublayer(videoPreviewLayer!)
+      //  videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)!
+     //   self.view.layer.addSublayer(videoPreviewLayer!)
+        self.view.layer.addSublayer(videoPreviewLayer)
+
         self.view.bringSubview(toFront: recordButton)
         self.view.bringSubview(toFront: speedControl)
         self.view.viewWithTag(5)!.tintColor = UIColor.white
         self.view.viewWithTag(4)!.tintColor = UIColor.white
+        
+        
+        videoPreviewLayer.contentsGravity = kCAGravityResizeAspectFill
+        videoPreviewLayer.frame = self.view.layer.frame
+        videoPreviewLayer.bounds = self.view.layer.bounds
+
         self.view.bringSubview(toFront: self.view.viewWithTag(4)!)
         self.view.bringSubview(toFront: self.view.viewWithTag(5)!)
-        videoPreviewLayer!.frame = self.view.layer.frame
-        videoPreviewLayer!.bounds = self.view.layer.bounds
-        videoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
-        
+        self.view.bringSubview(toFront: filterButton)
+        self.view.bringSubview(toFront: filterPicker)
+
         videoCaptureOutput.alwaysDiscardsLateVideoFrames = true
         let cameraQueue = DispatchQueue(label: "cameraQueue")
         videoCaptureOutput.setSampleBufferDelegate(self, queue: cameraQueue)
         
         captureSession.addOutput(videoCaptureOutput)
         captureSession.startRunning()
-        
-        if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
-            videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
-        }
+        videoPreviewLayer.transform = CATransform3DMakeRotation(CGFloat.pi/2, 0, 0, 1)
+
+//        if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
+//        }
         recordButton.addTarget(self, action: #selector(recordButtonDown), for: .touchDown)
         recordButton.addTarget(self, action: #selector(recordButtonUp), for: .touchUpInside)
         recordButton.addTarget(self, action: #selector(recordButtonUp), for: .touchUpOutside)
@@ -98,10 +111,21 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         }
         captureSession.commitConfiguration()
         if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
-            videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
+            videoConnection.videoOrientation = newVideoOrientationAfterRotation(0, start: currentOrientation)
         }
+        videoPreviewLayer.transform = CATransform3DMakeRotation(CGFloat.pi/2, 0, 0, 1)
+
     }
     
+    @IBAction func openFilterPicker(_ sender: AnyObject) {
+        if (filterPicker.isHidden) {
+            filterButton.setTitle("Back", for: .normal)
+            filterPicker.isHidden = false
+        } else {
+            filterButton.setTitle("No Filter", for: .normal)
+            filterPicker.isHidden = true
+        }
+    }
     
     @IBAction func reverseGIF(_ sender: AnyObject) {
         if (isReversed) {
@@ -133,11 +157,12 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         return nil
     }
     
-    func newVideoOrientationAfterRotation(_ angle:Int, start:AVCaptureVideoOrientation) -> AVCaptureVideoOrientation {
+    func newVideoTransformAfterRotation(_ angle:Int, start:AVCaptureVideoOrientation) -> CATransform3D {
         //1 -> 90
         //3 -> 180
         //-3 -> -180
         //-1 -> -90
+        print("\(angle) \(start.rawValue)")
         var angle = angle
         if (angle == -3) {
             angle = 3
@@ -145,34 +170,66 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
         switch (angle) {
          case -1:
             switch (start) {
+            case .portrait: return CATransform3DMakeRotation(-CGFloat.pi/2, 0, 0, 1)
+            default: return CATransform3DMakeRotation(0, 0, 0, 1)
+            }
+         case 3:
+            switch (start) {
+            case .landscapeLeft: return CATransform3DMakeRotation(CGFloat.pi, 0, 0, 1)
+            case .landscapeRight: return CATransform3DMakeRotation(CGFloat.pi, 0, 0, 1)
+            default: return CATransform3DMakeRotation(0, 0, 0, 1)
+            }
+         case 1:
+            switch (start) {
+            case .portrait: return CATransform3DMakeRotation(CGFloat.pi/2, 0, 0, 1)
+            default: return CATransform3DMakeRotation(0, 0, 0, 1)
+            }
+        default: return CATransform3DMakeRotation(0, 0, 0, 1)
+        }
+    }
+    
+    func newVideoOrientationAfterRotation(_ angle:Int, start:AVCaptureVideoOrientation) -> AVCaptureVideoOrientation {
+        var angle = angle
+        if (angle == -3) {
+            angle = 3
+        }
+        switch (angle) {
+        case -1:
+            switch (start) {
             case .portrait: return .landscapeLeft
             default: return .portrait
             }
-         case 3:
+        case 3:
             switch (start) {
             case .landscapeLeft: return .landscapeRight
             case .landscapeRight: return .landscapeLeft
             default: return .portrait
             }
-         case 1:
+        case 1:
             switch (start) {
             case .portrait: return .landscapeRight
             default: return .portrait
             }
         default: return .portrait
         }
+
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        videoPreviewLayer!.frame = CGRect(x: videoPreviewLayer!.frame.minX, y: videoPreviewLayer!.frame.minY, width: size.width, height: size.height)
-        videoPreviewLayer!.bounds = CGRect(x: videoPreviewLayer!.frame.minX, y: videoPreviewLayer!.frame.minY, width: size.width, height: size.height)
+        videoPreviewLayer.frame = CGRect(x: videoPreviewLayer.frame.minX, y: videoPreviewLayer.frame.minY, width: size.width, height: size.height)
+        videoPreviewLayer.bounds = CGRect(x: videoPreviewLayer.frame.minX, y: videoPreviewLayer.frame.minY, width: size.width, height: size.height)
         let angle = Int(atan2(coordinator.targetTransform.b, coordinator.targetTransform.a))
-        if (self.videoPreviewLayer!.connection.isVideoOrientationSupported) {
-            self.videoPreviewLayer!.connection.videoOrientation = self.newVideoOrientationAfterRotation(angle, start: self.videoPreviewLayer!.connection.videoOrientation)
-        }
+        //if (self.videoPreviewLayer!.connection.isVideoOrientationSupported) {
+    //        self.videoPreviewLayer!.connection.videoOrientation = self.newVideoOrientationAfterRotation(angle, start: self.videoPreviewLayer!.connection.videoOrientation)
+        //}
         if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
-            videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
+            videoConnection.videoOrientation = newVideoOrientationAfterRotation(0, start: currentOrientation)
         }
+
+       // if let videoConnection = self.videoCaptureOutput.connection(withMediaType: AVMediaTypeVideo), (videoConnection.isVideoOrientationSupported) {
+    //        videoConnection.videoOrientation = self.videoPreviewLayer!.connection.videoOrientation
+        //    videoPreviewLayer.transform = newVideoOrientationAfterRotation(angle, start: videoConnection.videoOrientation)
+      //  }
         super.viewWillTransition(to: size, with: coordinator)
     }
     
@@ -217,12 +274,18 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
     }
     
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
+        var ciImage = CIImage(cvImageBuffer: CMSampleBufferGetImageBuffer(sampleBuffer)!)
+        if (self.presentationStyle == .compact) {
+            ciImage = ciImage.cropping(to: CGRect(x: view.frame.minX, y: ciImage.extent.height - view.frame.height, width: view.frame.width, height: view.frame.height))
+        }
+
+        let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent)!
+        CATransaction.begin()
+        videoPreviewLayer.contents = cgImage
+        CATransaction.commit()
+        CATransaction.flush()
+
         if (isRecording) {
-            var ciImage = CIImage(cvImageBuffer: CMSampleBufferGetImageBuffer(sampleBuffer)!)
-            if (self.presentationStyle == .compact) {
-                ciImage = ciImage.cropping(to: CGRect(x: view.frame.minX, y: ciImage.extent.height - view.frame.height, width: view.frame.width, height: view.frame.height))
-            }
-            let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent)!
             switch (speedControl.selectedSegmentIndex) {
             case 1:
                 currentFrames.append(cgImage)
@@ -268,42 +331,6 @@ class MessagesViewController: MSMessagesAppViewController, AVCaptureVideoDataOut
             print("Failure to finalize image destination!")
             return nil
         }
-    }
-    
-    // MARK: - Conversation Handling
-    
-    override func willBecomeActive(with conversation: MSConversation) {
-        // Called when the extension is about to move from the inactive to active state.
-        // This will happen when the extension is about to present UI.
-        
-        // Use this method to configure the extension and restore previously stored state.
-    }
-    
-    override func didResignActive(with conversation: MSConversation) {
-        // Called when the extension is about to move from the active to inactive state.
-        // This will happen when the user dissmises the extension, changes to a different
-        // conversation or quits Messages.
-        
-        // Use this method to release shared resources, save user data, invalidate timers,
-        // and store enough state information to restore your extension to its current state
-        // in case it is terminated later.
-    }
-   
-    override func didReceive(_ message: MSMessage, conversation: MSConversation) {
-        // Called when a message arrives that was generated by another instance of this
-        // extension on a remote device.
-        
-        // Use this method to trigger UI updates in response to the message.
-    }
-    
-    override func didStartSending(_ message: MSMessage, conversation: MSConversation) {
-        // Called when the user taps the send button.
-    }
-    
-    override func didCancelSending(_ message: MSMessage, conversation: MSConversation) {
-        // Called when the user deletes the message without sending it.
-    
-        // Use this to clean up state related to the deleted message.
     }
 
 }
